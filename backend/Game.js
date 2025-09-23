@@ -33,7 +33,7 @@ export class Game {
       (turn === "w" && socket !== this.player1) ||
       (turn === "b" && socket !== this.player2)
     ) {
-      console.log("Not Your Turn");
+      console.log("Not Your Turn",turn);
       return;
     }
     // is valid move ??
