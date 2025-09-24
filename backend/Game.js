@@ -67,11 +67,13 @@ export class Game {
     // i have to write some code
 
 
+    this.moves.push(result.san);
     const update= JSON.stringify({
       type : MOVE,
       payload:{
         move : result,
-        fen : this.board.fen()
+        fen : this.board.fen(),
+        moves: this.moves
       }
     })
 

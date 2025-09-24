@@ -14,18 +14,21 @@ const Home = () => {
 
   return (
     <>
-      <div className="hero w-full h-screen flex items-center justify-center p-5">
-        <div className="left w-1/2 h-full  flex items-center">
-          <img className="w-full h-[90%]" src={boardImg} alt="boardImg" />
+      <div className="hero w-full min-h-screen flex-wrap flex items-center justify-center gap-2 p-10">
+        <div className="left w-[25rem] h-[25rem]  flex items-center justify-center">
+          <img className="w-[90%] h-[90%]" src={boardImg} alt="boardImg" />
         </div>
-        <div className="right w-1/2 h-full flex flex-col gap-4 p-10">
+        <div className="right  w-[25rem] h-[10rem]  flex items-center   gap-4 p-10">
+        <div>
           <h1 className="text-3xl font-bold text-green-400">ChessX</h1>
           <h2>{text}</h2>
-          <button className=" mt-2">
-            <Link className="px-4 py-2 bg-green-400 rounded-2xl " to={"/game"}>
-              Play
+          <button className=" mt-6">
+            <Link className="px-8 py-4 bg-green-800 rounded-xl " to={"/game"}>
+              Start Game
             </Link>
           </button>
+
+        </div>
         </div>
       </div>
     </>
