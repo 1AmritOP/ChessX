@@ -1,20 +1,42 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Chess } from "chess.js";
 import { Chessboard } from "react-chessboard";
+import toast from "react-hot-toast";
 
 const INIT_GAME = "init_game";
 const MOVE = "move";
 const GAME_OVER = "game_over";
 const ERROR = "error";
+const DRAW = "draw";
 const CHECK = "check";
+const KING = "k";
+const BLACK = "b";
+const WHITE = "w";
 
 const Game = () => {
   const [color, setColor] = useState(null);
   const [yourTurn, setYourTurn] = useState(false);
   const [game, setGame] = useState(new Chess());
   const [moves, setMoves] = useState([]);
+  const [squareStyles, setSquareStyles] = useState({});
+  const [checkedKingSquare, setCheckedKingSquare] = useState(null);
+  const [gameOver, setGameOver] = useState(false);
+
   const wsRef = useRef(null);
   const colorRef = useRef(null);
+
+
+  useEffect(() => {
+    if (game.isCheck()) {
+      setSquareStyles({
+        [checkedKingSquare]: {
+          backgroundColor: "rgba(255, 0, 0, 0.6)",
+        },
+      });
+    } else {
+      setSquareStyles({});
+    }
+  }, [game, checkedKingSquare]);
 
   useEffect(() => {
     if (!wsRef.current) {
@@ -57,9 +79,25 @@ const Game = () => {
           break;
         }
 
+        case GAME_OVER: {
+          let winner = message.payload.winner;
+          toast(`Checkmate, winner is : ${winner}`);
+          setGameOver(true);
+          break;
+        }
+
+        case DRAW: {
+          toast("Game Draw");
+          break;
+        }
+        case CHECK: {
+          const data = message.payload.checkKingSquare;
+          setCheckedKingSquare(data);
+          break;
+        }
         case ERROR: {
           let error = message.payload;
-          alert(error);
+          toast.error(error);
           break;
         }
       }
@@ -76,7 +114,7 @@ const Game = () => {
   const peiceDrop = ({ sourceSquare, targetSquare }) => {
     if (!yourTurn) {
       console.log("not your turn");
-      alert("not your turn");
+      toast("not your turn");
       return;
     }
     const move = {
@@ -97,7 +135,7 @@ const Game = () => {
   };
   return (
     <div className=" p-5 min-h-screen w-full">
-      <h1 className=" text-3xl font-bold text-center "> Chess X </h1>
+      <h1 className=" text-3xl font-bold text-center "> ChessX </h1>
       {color === null ? (
         <h1 className="font-bold text-xl">Searching for Opponets...</h1>
       ) : (
@@ -114,6 +152,8 @@ const Game = () => {
                   boardOrientation: color || "white",
                   allowDragOffBoard: false,
                   darkSquareStyle: { backgroundColor: "rgb(2, 74, 2)" },
+                  allowDragging: !game.isGameOver(),
+                  squareStyles,
                   // boardStyle: {
                   //   height: "100%",
                   //   width: "100%",
@@ -121,7 +161,29 @@ const Game = () => {
                 }}
               />
             </div>
-            <div className="moves">
+            <div
+              className="
+              moves h-80 w-fit p-6 overflow-y-auto
+              [&::-webkit-scrollbar]:w-2
+              [&::-webkit-scrollbar-track]:rounded-full
+            [&::-webkit-scrollbar-track]:bg-gray-100
+              [&::-webkit-scrollbar-thumb]:rounded-full
+            [&::-webkit-scrollbar-thumb]:bg-gray-300"
+            >
+              {gameOver && (
+                <>
+                  <h1 className="font-bold text-3xl text-red-500">Game Over</h1>
+                  <button
+                    type="button"
+                    className=" px-4 py-2 bg-green-800 rounded-xl text-xl font-bold cursor-pointer my-2"
+                    onClick={() => {
+                      window.location.reload();
+                    }}
+                  >
+                    New Game
+                  </button>
+                </>
+              )}
               <h1 className=" font-bold text-xl">Moves :</h1>
               {moves.map((move, index) => (
                 <p
