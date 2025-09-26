@@ -25,7 +25,6 @@ const Game = () => {
   const wsRef = useRef(null);
   const colorRef = useRef(null);
 
-
   useEffect(() => {
     if (game.isCheck()) {
       setSquareStyles({
@@ -50,7 +49,6 @@ const Game = () => {
 
     wsRef.current.onmessage = (msg) => {
       const message = JSON.parse(msg.data);
-      console.log("server message", message);
 
       switch (message.type) {
         case INIT_GAME: {
@@ -113,7 +111,6 @@ const Game = () => {
 
   const peiceDrop = ({ sourceSquare, targetSquare }) => {
     if (!yourTurn) {
-      console.log("not your turn");
       toast("not your turn");
       return;
     }
@@ -123,12 +120,19 @@ const Game = () => {
       promotion: "q",
     };
 
-    // false return karne ka code likhna hai jab move invalid ho, frontend se check karke
-    // agar move sahi hua to backend ko send karo
 
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type: MOVE, move }));
-      console.log("move sent");
+    let result;
+    try {
+      result = game.move(move);
+    } catch (error) {
+      console.log("Invalid move (error):", error);
+      return false;
+    }
+
+    if (result) {
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({ type: MOVE, move }));
+      }
     }
 
     return true;
@@ -154,10 +158,6 @@ const Game = () => {
                   darkSquareStyle: { backgroundColor: "rgb(2, 74, 2)" },
                   allowDragging: !game.isGameOver(),
                   squareStyles,
-                  // boardStyle: {
-                  //   height: "100%",
-                  //   width: "100%",
-                  // },
                 }}
               />
             </div>
