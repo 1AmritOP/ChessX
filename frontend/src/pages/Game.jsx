@@ -109,32 +109,42 @@ const Game = () => {
     };
   }, []);
 
-  const peiceDrop = ({ sourceSquare, targetSquare }) => {
-    if (!yourTurn) {
-      toast("not your turn");
-      return;
+
+const peiceDrop = ({ sourceSquare, targetSquare }) => {
+    if (!yourTurn || gameOver) {
+      if (!yourTurn && !gameOver) {
+        toast("Not your turn");
+      }
+      return false;
     }
-    const move = {
+
+    const moveData = {
       from: sourceSquare,
       to: targetSquare,
       promotion: "q",
     };
 
+    const gameCopy = new Chess(game.fen());
 
     let result;
     try {
-      result = game.move(move);
-    } catch (error) {
-      console.log("Invalid move (error):", error);
+      result = gameCopy.move(moveData);
+    } catch (e) {
+      console.log("Caught an error from chess.js:", e.message);
+      result = null;
+    }
+    if (result === null) {
       return false;
     }
-
-    if (result) {
-      if (wsRef.current?.readyState === WebSocket.OPEN) {
-        wsRef.current.send(JSON.stringify({ type: MOVE, move }));
-      }
+    
+    setGame(gameCopy);
+    
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: MOVE, move: moveData }));
     }
 
+    setYourTurn(false);
+    
     return true;
   };
   return (
